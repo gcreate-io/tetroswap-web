@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Test Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .reset-btn {
+            background: #ff6b6b;
+        }
+        .reset-btn:hover {
+            background: #ff5252;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-controls">
+        <h2>Tetroswap Level Test Helper</h2>
+        
+        <div class="info">
+            <strong>Instructions:</strong> Use these buttons to simulate level completion for testing the menu pagination and level states. 
+            After clicking a button, refresh the main game to see the changes.
+        </div>
+        
+        <h3>Simulate Progress:</h3>
+        <button onclick="completeLevels(5)">Complete First 5 Levels</button>
+        <button onclick="completeLevels(15)">Complete First 15 Levels</button>
+        <button onclick="completeLevels(25)">Complete First 25 Levels (Test Page 2)</button>
+        <button onclick="completeLevels(50)">Complete First 50 Levels (Test Page 3)</button>
+        
+        <h3>Reset:</h3>
+        <button class="reset-btn" onclick="resetProgress()">Reset All Progress</button>
+        
+        <h3>Current Status:</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script>
+        function completeLevels(count) {
+            const progress = {};
+            for (let i = 1; i <= count; i++) {
+                progress[i] = {
+                    completed: true,
+                    bestMoves: Math.floor(Math.random() * 10) + 1,
+                    perfect: Math.random() > 0.5
+                };
+            }
+            
+            localStorage.setItem('tetroswap_progress', JSON.stringify(progress));
+            updateStatus();
+            alert(`Completed first ${count} levels! Refresh the game to see changes.`);
+        }
+        
+        function resetProgress() {
+            localStorage.removeItem('tetroswap_progress');
+            localStorage.removeItem('tetroswap_current_page');
+            updateStatus();
+            alert('Progress reset! Refresh the game to see changes.');
+        }
+        
+        function updateStatus() {
+            try {
+                const progress = JSON.parse(localStorage.getItem('tetroswap_progress') || '{}');
+                const completedCount = Object.keys(progress).length;
+                const currentPage = localStorage.getItem('tetroswap_current_page') || '0';
+                
+                document.getElementById('status').innerHTML = `
+                    <strong>Completed Levels:</strong> ${completedCount}/80<br>
+                    <strong>Current Page:</strong> ${currentPage} (Levels ${parseInt(currentPage) * 20 + 1}-${Math.min((parseInt(currentPage) + 1) * 20, 80)})
+                `;
+            } catch (error) {
+                document.getElementById('status').innerHTML = 'No progress data found.';
+            }
+        }
+        
+        // Update status on load
+        updateStatus();
+        
+        // Update status every second to show real-time changes
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>
