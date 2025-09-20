@@ -284,7 +284,7 @@ class Grid {
         console.log('Drag ended');
     }
 
-    // Highlight the start of drag operation
+    // Highlight the start of drag operation - only highlight boxes that can actually be swapped
     highlightDragStart() {
         const { col, row } = this.dragStartBox;
         const { rows, cols } = this.level.getDimensions();
@@ -292,15 +292,19 @@ class Grid {
         // Change cursor and highlight based on drag type
         if (this.swapType === 'row') {
             document.body.style.cursor = 'ns-resize';
-            // Highlight entire row
+            // Only highlight boxes on visible tiles in this row
             for (let c = 0; c < cols; c++) {
-                this.highlightBox(c, row, true);
+                if (!this.level.isInvisibleTile(c, row)) {
+                    this.highlightBox(c, row, true);
+                }
             }
         } else if (this.swapType === 'column') {
             document.body.style.cursor = 'ew-resize';
-            // Highlight entire column
+            // Only highlight boxes on visible tiles in this column
             for (let r = 0; r < rows; r++) {
-                this.highlightBox(col, r, true);
+                if (!this.level.isInvisibleTile(col, r)) {
+                    this.highlightBox(col, r, true);
+                }
             }
         }
     }
@@ -412,27 +416,33 @@ class Grid {
         }
     }
 
-    // Preview row swap with enhanced highlighting
+    // Preview row swap with enhanced highlighting - only highlight boxes that will actually swap
     previewRowSwap(rowA, rowB) {
         this.clearAllHighlights();
         
-        // Highlight both rows with different styles
+        // Only highlight positions where both tiles are visible (actual swap will occur)
         const { cols } = this.level.getDimensions();
         for (let col = 0; col < cols; col++) {
-            this.highlightBox(col, rowA, true, 'primary'); // Original row
-            this.highlightBox(col, rowB, true, 'secondary'); // Target row
+            if (!this.level.isInvisibleTile(col, rowA) && !this.level.isInvisibleTile(col, rowB)) {
+                // Both positions visible - these boxes will swap
+                this.highlightBox(col, rowA, true, 'primary'); // Original row
+                this.highlightBox(col, rowB, true, 'secondary'); // Target row
+            }
         }
     }
 
-    // Preview column swap with enhanced highlighting
+    // Preview column swap with enhanced highlighting - only highlight boxes that will actually swap
     previewColumnSwap(colA, colB) {
         this.clearAllHighlights();
         
-        // Highlight both columns with different styles
+        // Only highlight positions where both tiles are visible (actual swap will occur)
         const { rows } = this.level.getDimensions();
         for (let row = 0; row < rows; row++) {
-            this.highlightBox(colA, row, true, 'primary'); // Original column
-            this.highlightBox(colB, row, true, 'secondary'); // Target column
+            if (!this.level.isInvisibleTile(colA, row) && !this.level.isInvisibleTile(colB, row)) {
+                // Both positions visible - these boxes will swap
+                this.highlightBox(colA, row, true, 'primary'); // Original column
+                this.highlightBox(colB, row, true, 'secondary'); // Target column
+            }
         }
     }
 
