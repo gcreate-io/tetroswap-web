@@ -35,6 +35,7 @@ class Grid {
         this.container = document.createElement('div');
         this.container.style.cssText = `
             position: absolute;
+            display: grid;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 16px;
@@ -82,13 +83,11 @@ class Grid {
 
         const { rows, cols } = this.level.getDimensions();
         
-        // Set container size for absolute positioning
-        const containerWidth = cols * this.boxSize + (cols - 1) * this.spacing;
-        const containerHeight = rows * this.boxSize + (rows - 1) * this.spacing;
-        this.container.style.width = containerWidth + 'px';
-        this.container.style.height = containerHeight + 'px';
-        this.container.style.position = 'relative';
-        this.container.style.display = 'block'; // Change from grid to block
+        // Set grid template (CSS Grid)
+        this.container.style.gridTemplateColumns = `repeat(${cols}, ${this.boxSize}px)`;
+        this.container.style.gridTemplateRows = `repeat(${rows}, ${this.boxSize}px)`;
+        this.container.style.display = 'grid';
+        this.container.style.gap = `${this.spacing}px`;
 
         // Clear existing elements
         this.container.innerHTML = '';
@@ -102,19 +101,20 @@ class Grid {
         // Create box elements (render directly without coordinate flipping)
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
-                // Skip invisible tiles - don't create DOM elements for them
+                let element;
+                
                 if (this.level.isInvisibleTile(col, row)) {
-                    this.boxElements[row][col] = null; // Mark as invisible
-                    continue;
+                    // Create invisible placeholder div to maintain grid layout
+                    element = this.createInvisibleElement(col, row);
+                    this.boxElements[row][col] = null; // Mark as invisible for interaction
+                } else {
+                    // Create normal box element
+                    const box = this.level.getBox(col, row);
+                    element = this.createBoxElement(box, col, row);
+                    this.boxElements[row][col] = element; // Store for interaction
                 }
                 
-                const box = this.level.getBox(col, row);
-                const element = this.createBoxElement(box, col, row);
-                
-                // Store element reference
-                this.boxElements[row][col] = element;
-                
-                // Add to container
+                // Add to container (both visible and invisible placeholders)
                 this.container.appendChild(element);
             }
         }
@@ -129,15 +129,8 @@ class Grid {
     createBoxElement(box, col, row) {
         const element = document.createElement('div');
         
-        // Calculate absolute position
-        const left = col * (this.boxSize + this.spacing);
-        const top = row * (this.boxSize + this.spacing);
-        
-        // Basic box styling with absolute positioning and smooth transitions
+        // Basic box styling with smooth transitions (CSS Grid positioning)
         element.style.cssText = `
-            position: absolute;
-            left: ${left}px;
-            top: ${top}px;
             width: ${this.boxSize}px;
             height: ${this.boxSize}px;
             border-radius: ${this.borderRadius}px;
@@ -178,6 +171,21 @@ class Grid {
         element.addEventListener('mousedown', (e) => this.handleDragStart(e, col, row));
         element.addEventListener('touchstart', (e) => this.handleDragStart(e, col, row), { passive: false });
 
+        return element;
+    }
+
+    // Create an invisible placeholder element to maintain grid layout
+    createInvisibleElement(col, row) {
+        const element = document.createElement('div');
+        
+        // Invisible styling - takes up space but not visible or interactive
+        element.style.cssText = `
+            width: ${this.boxSize}px;
+            height: ${this.boxSize}px;
+            visibility: hidden;
+            pointer-events: none;
+        `;
+        
         return element;
     }
 
