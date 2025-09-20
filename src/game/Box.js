@@ -70,9 +70,14 @@ class Box {
         return getColorName(this.color);
     }
 
-    // Check if this box is empty
+    // Check if this box is empty (visible empty tile with "0")
     isEmpty() {
         return this.color === BoxColor.EMPTY;
+    }
+
+    // Check if this tile should not exist (invisible tile with "")
+    isInvisible() {
+        return this.color === '' || this.color === null || this.color === undefined;
     }
 
     // Create a copy of this box

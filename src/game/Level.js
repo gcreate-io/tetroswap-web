@@ -56,9 +56,13 @@ class Level {
             
             for (let col = 0; col < rowData.length; col++) {
                 const colorCode = rowData[col];
-                if (colorCode && colorCode !== '') {
+                
+                // Create box for any defined tile (including "0" for empty visible tiles)
+                // Only skip creation for empty strings ("") which represent invisible tiles
+                if (colorCode !== undefined && colorCode !== '') {
                     this.boxes[row][col] = new Box(col, row, colorCode);
                 }
+                // For invisible tiles (empty string), leave boxes[row][col] as null
             }
         }
     }
@@ -84,6 +88,20 @@ class Level {
         return true;
     }
 
+    // Check if a tile position is invisible (should not be rendered)
+    isInvisibleTile(col, row) {
+        if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
+            return true; // Out of bounds is invisible
+        }
+        
+        // Check if this position was defined as empty string in the JSON
+        if (this.levelData && this.levelData.tiles[row] && this.levelData.tiles[row][col] === '') {
+            return true;
+        }
+        
+        return false;
+    }
+
     // Get all boxes in a row
     getRow(row) {
         if (row < 0 || row >= this.rows) return [];
@@ -106,6 +124,14 @@ class Level {
             return false;
         }
         if (rowA === rowB) return false;
+
+        // Check if either row contains invisible tiles - prevent swap if so
+        for (let col = 0; col < this.cols; col++) {
+            if (this.isInvisibleTile(col, rowA) || this.isInvisibleTile(col, rowB)) {
+                console.log(`Cannot swap rows ${rowA} and ${rowB}: contains invisible tiles`);
+                return false;
+            }
+        }
 
         // Save current state for undo
         this.saveStateForUndo();
@@ -135,6 +161,14 @@ class Level {
             return false;
         }
         if (colA === colB) return false;
+
+        // Check if either column contains invisible tiles - prevent swap if so
+        for (let row = 0; row < this.rows; row++) {
+            if (this.isInvisibleTile(colA, row) || this.isInvisibleTile(colB, row)) {
+                console.log(`Cannot swap columns ${colA} and ${colB}: contains invisible tiles`);
+                return false;
+            }
+        }
 
         // Save current state for undo
         this.saveStateForUndo();

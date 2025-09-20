@@ -35,8 +35,6 @@ class Grid {
         this.container = document.createElement('div');
         this.container.style.cssText = `
             position: absolute;
-            display: grid;
-            gap: ${this.spacing}px;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 16px;
@@ -84,9 +82,13 @@ class Grid {
 
         const { rows, cols } = this.level.getDimensions();
         
-        // Set grid template
-        this.container.style.gridTemplateColumns = `repeat(${cols}, ${this.boxSize}px)`;
-        this.container.style.gridTemplateRows = `repeat(${rows}, ${this.boxSize}px)`;
+        // Set container size for absolute positioning
+        const containerWidth = cols * this.boxSize + (cols - 1) * this.spacing;
+        const containerHeight = rows * this.boxSize + (rows - 1) * this.spacing;
+        this.container.style.width = containerWidth + 'px';
+        this.container.style.height = containerHeight + 'px';
+        this.container.style.position = 'relative';
+        this.container.style.display = 'block'; // Change from grid to block
 
         // Clear existing elements
         this.container.innerHTML = '';
@@ -100,6 +102,12 @@ class Grid {
         // Create box elements (render directly without coordinate flipping)
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
+                // Skip invisible tiles - don't create DOM elements for them
+                if (this.level.isInvisibleTile(col, row)) {
+                    this.boxElements[row][col] = null; // Mark as invisible
+                    continue;
+                }
+                
                 const box = this.level.getBox(col, row);
                 const element = this.createBoxElement(box, col, row);
                 
@@ -121,8 +129,15 @@ class Grid {
     createBoxElement(box, col, row) {
         const element = document.createElement('div');
         
-        // Basic box styling with smooth transitions
+        // Calculate absolute position
+        const left = col * (this.boxSize + this.spacing);
+        const top = row * (this.boxSize + this.spacing);
+        
+        // Basic box styling with absolute positioning and smooth transitions
         element.style.cssText = `
+            position: absolute;
+            left: ${left}px;
+            top: ${top}px;
             width: ${this.boxSize}px;
             height: ${this.boxSize}px;
             border-radius: ${this.borderRadius}px;
@@ -187,6 +202,12 @@ class Grid {
     // Handle start of drag operation
     handleDragStart(event, col, row) {
         event.preventDefault();
+        
+        // Don't allow drag start on invisible tiles
+        if (this.level.isInvisibleTile(col, row)) {
+            console.log(`Cannot drag from invisible tile at (${col}, ${row})`);
+            return;
+        }
         
         // Get initial position
         const clientX = event.clientX || (event.touches && event.touches[0].clientX);
@@ -355,6 +376,11 @@ class Grid {
 
     // Highlight a specific box with different styles
     highlightBox(col, row, highlight, style = 'primary') {
+        // Skip highlighting invisible tiles
+        if (this.level.isInvisibleTile(col, row)) {
+            return;
+        }
+        
         const element = this.boxElements[row]?.[col];
         if (element) {
             if (highlight) {
