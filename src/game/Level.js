@@ -125,23 +125,29 @@ class Level {
         }
         if (rowA === rowB) return false;
 
-        // Check if either row contains invisible tiles - prevent swap if so
-        for (let col = 0; col < this.cols; col++) {
-            if (this.isInvisibleTile(col, rowA) || this.isInvisibleTile(col, rowB)) {
-                console.log(`Cannot swap rows ${rowA} and ${rowB}: contains invisible tiles`);
-                return false;
-            }
-        }
-
         // Save current state for undo
         this.saveStateForUndo();
 
-        // Swap the rows
-        const tempRow = [...this.boxes[rowA]];
-        this.boxes[rowA] = [...this.boxes[rowB]];
-        this.boxes[rowB] = tempRow;
+        // Swap the rows - swap all positions but invisible tiles remain null
+        for (let col = 0; col < this.cols; col++) {
+            if (!this.isInvisibleTile(col, rowA) && !this.isInvisibleTile(col, rowB)) {
+                // Both positions are visible - normal swap
+                const temp = this.boxes[rowA][col];
+                this.boxes[rowA][col] = this.boxes[rowB][col];
+                this.boxes[rowB][col] = temp;
+            } else if (!this.isInvisibleTile(col, rowA) && this.isInvisibleTile(col, rowB)) {
+                // rowA is visible, rowB is invisible - box from A disappears, nothing moves to A
+                this.boxes[rowA][col] = null;
+                // rowB stays null (invisible)
+            } else if (this.isInvisibleTile(col, rowA) && !this.isInvisibleTile(col, rowB)) {
+                // rowA is invisible, rowB is visible - box from B disappears, nothing moves to B
+                this.boxes[rowB][col] = null;
+                // rowA stays null (invisible)
+            }
+            // If both are invisible, both stay null - no change needed
+        }
 
-        // Update box positions
+        // Update box positions for all moved boxes
         for (let col = 0; col < this.cols; col++) {
             if (this.boxes[rowA][col]) {
                 this.boxes[rowA][col].row = rowA;
@@ -162,24 +168,30 @@ class Level {
         }
         if (colA === colB) return false;
 
-        // Check if either column contains invisible tiles - prevent swap if so
-        for (let row = 0; row < this.rows; row++) {
-            if (this.isInvisibleTile(colA, row) || this.isInvisibleTile(colB, row)) {
-                console.log(`Cannot swap columns ${colA} and ${colB}: contains invisible tiles`);
-                return false;
-            }
-        }
-
         // Save current state for undo
         this.saveStateForUndo();
 
-        // Swap the columns
+        // Swap the columns - swap all positions but invisible tiles remain null
         for (let row = 0; row < this.rows; row++) {
-            const temp = this.boxes[row][colA];
-            this.boxes[row][colA] = this.boxes[row][colB];
-            this.boxes[row][colB] = temp;
+            if (!this.isInvisibleTile(colA, row) && !this.isInvisibleTile(colB, row)) {
+                // Both positions are visible - normal swap
+                const temp = this.boxes[row][colA];
+                this.boxes[row][colA] = this.boxes[row][colB];
+                this.boxes[row][colB] = temp;
+            } else if (!this.isInvisibleTile(colA, row) && this.isInvisibleTile(colB, row)) {
+                // colA is visible, colB is invisible - box from A disappears, nothing moves to A
+                this.boxes[row][colA] = null;
+                // colB stays null (invisible)
+            } else if (this.isInvisibleTile(colA, row) && !this.isInvisibleTile(colB, row)) {
+                // colA is invisible, colB is visible - box from B disappears, nothing moves to B
+                this.boxes[row][colB] = null;
+                // colA stays null (invisible)
+            }
+            // If both are invisible, both stay null - no change needed
+        }
 
-            // Update box positions
+        // Update box positions for all moved boxes
+        for (let row = 0; row < this.rows; row++) {
             if (this.boxes[row][colA]) {
                 this.boxes[row][colA].column = colA;
             }
