@@ -128,23 +128,18 @@ class Level {
         // Save current state for undo
         this.saveStateForUndo();
 
-        // Swap the rows - swap all positions but invisible tiles remain null
+        // Swap the rows - only swap between visible tiles, boxes stay put when paired with invisible tiles
         for (let col = 0; col < this.cols; col++) {
             if (!this.isInvisibleTile(col, rowA) && !this.isInvisibleTile(col, rowB)) {
                 // Both positions are visible - normal swap
                 const temp = this.boxes[rowA][col];
                 this.boxes[rowA][col] = this.boxes[rowB][col];
                 this.boxes[rowB][col] = temp;
-            } else if (!this.isInvisibleTile(col, rowA) && this.isInvisibleTile(col, rowB)) {
-                // rowA is visible, rowB is invisible - box from A disappears, nothing moves to A
-                this.boxes[rowA][col] = null;
-                // rowB stays null (invisible)
-            } else if (this.isInvisibleTile(col, rowA) && !this.isInvisibleTile(col, rowB)) {
-                // rowA is invisible, rowB is visible - box from B disappears, nothing moves to B
-                this.boxes[rowB][col] = null;
-                // rowA stays null (invisible)
             }
-            // If both are invisible, both stay null - no change needed
+            // If one or both positions are invisible, no swap occurs - boxes stay in their original positions
+            // This means:
+            // - Visible tile paired with invisible tile: box stays on visible tile
+            // - Invisible tiles stay null
         }
 
         // Update box positions for all moved boxes
@@ -171,23 +166,18 @@ class Level {
         // Save current state for undo
         this.saveStateForUndo();
 
-        // Swap the columns - swap all positions but invisible tiles remain null
+        // Swap the columns - only swap between visible tiles, boxes stay put when paired with invisible tiles
         for (let row = 0; row < this.rows; row++) {
             if (!this.isInvisibleTile(colA, row) && !this.isInvisibleTile(colB, row)) {
                 // Both positions are visible - normal swap
                 const temp = this.boxes[row][colA];
                 this.boxes[row][colA] = this.boxes[row][colB];
                 this.boxes[row][colB] = temp;
-            } else if (!this.isInvisibleTile(colA, row) && this.isInvisibleTile(colB, row)) {
-                // colA is visible, colB is invisible - box from A disappears, nothing moves to A
-                this.boxes[row][colA] = null;
-                // colB stays null (invisible)
-            } else if (this.isInvisibleTile(colA, row) && !this.isInvisibleTile(colB, row)) {
-                // colA is invisible, colB is visible - box from B disappears, nothing moves to B
-                this.boxes[row][colB] = null;
-                // colA stays null (invisible)
             }
-            // If both are invisible, both stay null - no change needed
+            // If one or both positions are invisible, no swap occurs - boxes stay in their original positions
+            // This means:
+            // - Visible tile paired with invisible tile: box stays on visible tile
+            // - Invisible tiles stay null
         }
 
         // Update box positions for all moved boxes
