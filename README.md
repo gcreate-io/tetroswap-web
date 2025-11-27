@@ -123,7 +123,7 @@ This codebase was generated and developed using **[Warp.dev](https://warp.dev)**
 
 ## Live Demo
 
-🎮 **[Play Tetroswap Web](https://gcreate-io.github.io/tetroswap-web/)** 
+🎮 **[Play Tetroswap Web](https://www.gcreate.io/tetroswap-web/)** 
 
 ---
 
